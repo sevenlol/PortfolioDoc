@@ -1,0 +1,8 @@
+{
+  "doc": {
+    "Design": ["overview","architecture","tech_stack","repo"],
+    "Website" : ["web_app_structure","web_feature_home","web_feature_about",
+      "web_feature_project","db_schema","web_tests_n_docs"],
+    "Automation" : ["ci_cd","tools"]
+  }
+}
