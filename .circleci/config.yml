@@ -26,7 +26,7 @@ jobs:
           command: |
             git config --global user.email ${GITHUB_EMAIL}
             git config --global user.name ${GITHUB_NAME}
-            GIT_USER=${GITHUB_NAME} npm run publish-gh-pages
+            GIT_USER=${GITHUB_NAME} USE_SSH=true npm run publish-gh-pages
 workflows:
   version: 2
   deploy_doc:
