@@ -1,0 +1,197 @@
+<html lang="en"><head><meta charset="utf-8"/><meta http-equiv="X-UA-Compatible" content="IE=edge"/><title>Database Schema · Stephen Lin&#x27;s Website</title><meta name="viewport" content="width=device-width"/><meta name="generator" content="Docusaurus"/><meta property="og:title" content="Database Schema · Stephen Lin&#x27;s Website"/><meta property="og:type" content="website"/><meta property="og:url" content="https://facebook.github.io/portfoliodoc/index.html"/><meta property="og:description" content="This page documents the schema of the website with some notes on my thought process behind the design. Although Firestore does not require one, keeping a consistent data model makes processing data much easier (in my opinion). There are three root `collection`s used by the website, `info`, `metadata` and `projects`."/><link rel="shortcut icon" href="/portfoliodoc/img/favicon/favicon.ico"/><link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css"/><script type="text/javascript" src="https://buttons.github.io/buttons.js"></script><link rel="stylesheet" href="/portfoliodoc/css/main.css"/></head><body class="sideNavVisible"><div class="fixedHeaderContainer"><div class="headerWrapper wrapper"><header><a href="/portfoliodoc/"><h2 class="headerTitle">Stephen Lin&#x27;s Website</h2></a><div class="navigationWrapper navigationSlider"><nav class="slidingNav"><ul class="nav-site nav-site-internal"><li><a href="/portfoliodoc/docs/overview.html" target="_self">Design Docs</a></li><li><a href="https://sevenlol.github.io/PortfolioWebTSDoc/" target="_self">Typescript Doc</a></li></ul></nav></div></header></div></div><div class="navPusher"><div class="docMainWrapper wrapper"><div class="container docsNavContainer" id="docsNav"><nav class="toc"><div class="toggleNav"><section class="navWrapper wrapper"><div class="navBreadcrumb wrapper"><div class="navToggle" id="navToggler"><i></i></div><h2><i>›</i><span>Website</span></h2></div><div class="navGroups"><div class="navGroup navGroupActive"><h3>Design</h3><ul><li class="navListItem"><a class="navItem" href="/portfoliodoc/docs/overview.html">Overview</a></li><li class="navListItem"><a class="navItem" href="/portfoliodoc/docs/architecture.html">Architecture</a></li><li class="navListItem"><a class="navItem" href="/portfoliodoc/docs/tech_stack.html">Technology Stack</a></li><li class="navListItem"><a class="navItem" href="/portfoliodoc/docs/repo.html">Git Repositories</a></li></ul></div><div class="navGroup navGroupActive"><h3>Website</h3><ul><li class="navListItem"><a class="navItem" href="/portfoliodoc/docs/web_app_structure.html">Application Structure</a></li><li class="navListItem"><a class="navItem" href="/portfoliodoc/docs/web_feature_home.html">Feature - Home</a></li><li class="navListItem"><a class="navItem" href="/portfoliodoc/docs/web_feature_about.html">Feature - About</a></li><li class="navListItem"><a class="navItem" href="/portfoliodoc/docs/web_feature_project.html">Feature - Project</a></li><li class="navListItem navListItemActive"><a class="navItem navItemActive" href="/portfoliodoc/docs/db_schema.html">Database Schema</a></li><li class="navListItem"><a class="navItem" href="/portfoliodoc/docs/web_tests_n_docs.html">Tests and Documentations</a></li></ul></div><div class="navGroup navGroupActive"><h3>Automation</h3><ul><li class="navListItem"><a class="navItem" href="/portfoliodoc/docs/ci_cd.html">CI &amp; CD</a></li><li class="navListItem"><a class="navItem" href="/portfoliodoc/docs/tools.html">Tools</a></li></ul></div></div></section></div><script>
+          var toggler = document.getElementById('navToggler');
+          var nav = document.getElementById('docsNav');
+          toggler.onclick = function() {
+            nav.classList.toggle('docsSliderActive');
+          };
+        </script></nav></div><div class="container mainContainer"><div class="wrapper"><div class="post"><header class="postHeader"><h1>Database Schema</h1></header><article><div><span><p>This page documents the schema of the website with some notes on my thought process behind the design. Although Firestore does not require one, keeping a consistent data model makes processing data much easier (in my opinion). There are three root <code>collection</code>s used by the website, <code>info</code>, <code>metadata</code> and <code>projects</code>.</p>
+<h2><a class="anchor" aria-hidden="true" name="info-collection"></a><a href="#info-collection" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Info Collection</h2>
+<p>An <code>info document</code> named <code>basic</code> contains information about me. The schema is in the following tables. There are two subcollections in this document, <code>work</code> and <code>skills</code>, storing work experience items and skills category documents respectively.</p>
+<p>Education items are store in an array as a property in a document, instead of storing in a separate subcollection. This is because the number of education items will not grow in the near future (my career plans). Retrieving education information is easier and updating the entire array is not a problem (not frequent and not much items).</p>
+<p>On the contrary, work experiences items are stored in a separate subcollection because the number of items is expected to grow. In addition, updating the individual item is easier and pagination and sorting can be performed more easily (e.g., query X most recent items).</p>
+<p>Skill items are also stored in a spearate subcollection, but for a different reason. Each document stores the related skills of a specific category (e.g., Backend Development). While the number of documents is not expected to grow much, the size of the content (number of skills) will (should) grow. If skills are stored in <code>info document</code> as education, the size of the document my grow too big. Also, rearranging the skills to different category or renaming a category is easier. A priority field is associated with each category so that the order of skill categories (displayed) can be adjusted.</p>
+<p>An additional <code>index</code> is established in Firestore, sorting documents with <code>priority</code> property in <code>desc</code> order and update time property in <code>desc</code> order (serve as a tiebreaker). This index is setup because otherwise I have to enforce the uniqueness of <code>priority</code> values (to allow pagination with cursor in the websitee).</p>
+<h4><a class="anchor" aria-hidden="true" name="info-document-schema"></a><a href="#info-document-schema" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Info Document Schema</h4>
+<table>
+<thead>
+<tr><th>property</th><th>type</th><th>required</th><th>description</th></tr>
+</thead>
+<tbody>
+<tr><td>name</td><td>Text string</td><td>true</td><td>Full name. E.g., <code>Stephen Lin</code></td></tr>
+<tr><td>summary</td><td>Text string</td><td>true</td><td>Short description.</td></tr>
+<tr><td>email</td><td>Text string</td><td>true</td><td>Email address.</td></tr>
+<tr><td>image</td><td>Text string</td><td>true</td><td>Avatar url.</td></tr>
+<tr><td>location</td><td>Map</td><td>true</td><td>The location I lived.</td></tr>
+<tr><td>location.city</td><td>Text string</td><td>true</td><td>City name. E.g., <code>Hsinchu</code></td></tr>
+<tr><td>location.region</td><td>Text string</td><td>true</td><td>Region name.</td></tr>
+<tr><td>phone</td><td>Text string</td><td>true</td><td>Phone number.</td></tr>
+<tr><td>url</td><td>Text string</td><td>true</td><td>Personal website url.</td></tr>
+<tr><td>resumeUrl</td><td>Text string</td><td>true</td><td>Resume url.</td></tr>
+<tr><td>profile</td><td>Map&lt;Text string, <code>Profile entity</code>&gt;</td><td>true</td><td>Map of my other profiles. Keys in the map represent the type of profile, e.g., <code>github</code>.</td></tr>
+<tr><td>education</td><td>Array(<code>Education entity</code>)</td><td>true</td><td>List of my education information, sorted in reverse chronological order.</td></tr>
+</tbody>
+</table>
+<h4><a class="anchor" aria-hidden="true" name="profile-entity-schema"></a><a href="#profile-entity-schema" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Profile Entity Schema</h4>
+<table>
+<thead>
+<tr><th>property</th><th>type</th><th>required</th><th>description</th></tr>
+</thead>
+<tbody>
+<tr><td>url</td><td>Text string</td><td>true</td><td>Url of the profile page.</td></tr>
+<tr><td>username</td><td>Text string</td><td>false</td><td>Username.</td></tr>
+</tbody>
+</table>
+<h4><a class="anchor" aria-hidden="true" name="education-entity-schema"></a><a href="#education-entity-schema" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Education Entity Schema</h4>
+<table>
+<thead>
+<tr><th>property</th><th>type</th><th>required</th><th>description</th></tr>
+</thead>
+<tbody>
+<tr><td>area</td><td>Text string</td><td>true</td><td>Field of study. E.g., Communication Engineering.</td></tr>
+<tr><td>institution</td><td>Text string</td><td>true</td><td>Institution name. E.g., National Chiao Tung University.</td></tr>
+<tr><td>studyType</td><td>Text string</td><td>true</td><td>Degree type. E.g., Bachelor.</td></tr>
+<tr><td>startDate</td><td>Date</td><td>true</td><td>Start time.</td></tr>
+<tr><td>endDate</td><td>Date</td><td>true</td><td>End time.</td></tr>
+</tbody>
+</table>
+<h4><a class="anchor" aria-hidden="true" name="work-subcollection-schema"></a><a href="#work-subcollection-schema" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Work Subcollection Schema</h4>
+<table>
+<thead>
+<tr><th>property</th><th>type</th><th>required</th><th>description</th></tr>
+</thead>
+<tbody>
+<tr><td>name</td><td>Text string</td><td>true</td><td>Company name. E.g., <code>Gemtek Technology</code></td></tr>
+<tr><td>position</td><td>Text string</td><td>true</td><td>My job title. E.g., <code>Software Engineer</code></td></tr>
+<tr><td>location</td><td>Text string</td><td>true</td><td>Where I worked.</td></tr>
+<tr><td>summary</td><td>Text string</td><td>true</td><td>Summary of this job.</td></tr>
+<tr><td>description</td><td>Text string</td><td>false</td><td>Description of the company.</td></tr>
+<tr><td>startDate</td><td>Date</td><td>true</td><td>Start time of this job.</td></tr>
+<tr><td>endDate</td><td>Date</td><td>true</td><td>End time of this job.</td></tr>
+<tr><td>highlights</td><td>Array(Text string)</td><td>true</td><td>List of descriptions on this job.</td></tr>
+</tbody>
+</table>
+<h4><a class="anchor" aria-hidden="true" name="skills-subcollection-schema"></a><a href="#skills-subcollection-schema" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Skills Subcollection Schema</h4>
+<table>
+<thead>
+<tr><th>property</th><th>type</th><th>required</th><th>description</th></tr>
+</thead>
+<tbody>
+<tr><td>name</td><td>Text string</td><td>true</td><td>Displayed category name. E.g., <code>Backend Developmen</code></td></tr>
+<tr><td>priority</td><td>Integer</td><td>true</td><td>Priority of this category.</td></tr>
+<tr><td>updatedAt</td><td>Date</td><td>true</td><td>Last update time of this category.</td></tr>
+<tr><td>items</td><td>Array(<code>Skill entity</code>)</td><td>true</td><td>List of skill items in this category.</td></tr>
+</tbody>
+</table>
+<h4><a class="anchor" aria-hidden="true" name="skill-entity-schema"></a><a href="#skill-entity-schema" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Skill Entity Schema</h4>
+<table>
+<thead>
+<tr><th>property</th><th>type</th><th>required</th><th>description</th></tr>
+</thead>
+<tbody>
+<tr><td>name</td><td>Text string</td><td>true</td><td>Displayed skill name. E.g., <code>Redis</code></td></tr>
+<tr><td>description</td><td>Text string</td><td>true</td><td>Short description.</td></tr>
+<tr><td>url</td><td>Text string</td><td>true</td><td>Link to a related website.</td></tr>
+</tbody>
+</table>
+<h2><a class="anchor" aria-hidden="true" name="metadata-collection"></a><a href="#metadata-collection" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Metadata Collection</h2>
+<p>This collection contains metadata, including keyword, project category, and language. Project categories and programming language resources are stored in document <code>main</code> while keywords are stored in document <code>keyword</code>. <code>Map</code>s that associate <code>string keys</code> to <code>Resource entity</code> are stored as properties in these documents. For example, a resource map for programming languages can have <code>java</code> as one key and a resource entity <code>displayName=Java</code> as the associated value.</p>
+<h4><a class="anchor" aria-hidden="true" name="main-metadata-schema"></a><a href="#main-metadata-schema" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Main Metadata Schema</h4>
+<table>
+<thead>
+<tr><th>property</th><th>type</th><th>required</th><th>description</th></tr>
+</thead>
+<tbody>
+<tr><td>languages</td><td>Map&lt;Text string, <code>Resource entity</code>&gt;</td><td>true</td><td>Resource map for programming languages</td></tr>
+<tr><td>types</td><td>Map&lt;Text string, <code>Resource entity</code>&gt;</td><td>true</td><td>Resource map for project categories</td></tr>
+</tbody>
+</table>
+<h4><a class="anchor" aria-hidden="true" name="keyword-metadata-schema"></a><a href="#keyword-metadata-schema" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Keyword Metadata Schema</h4>
+<table>
+<thead>
+<tr><th>property</th><th>type</th><th>required</th><th>description</th></tr>
+</thead>
+<tbody>
+<tr><td>keywords</td><td>Map&lt;Text string, <code>Resource entity</code>&gt;</td><td>true</td><td>Resource map for keywords</td></tr>
+</tbody>
+</table>
+<h4><a class="anchor" aria-hidden="true" name="resource-entity-schema"></a><a href="#resource-entity-schema" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Resource Entity Schema</h4>
+<table>
+<thead>
+<tr><th>property</th><th>type</th><th>required</th><th>description</th></tr>
+</thead>
+<tbody>
+<tr><td>displayName</td><td>Text string</td><td>true</td><td>Name of the resource</td></tr>
+<tr><td>description</td><td>Text string</td><td>false</td><td>Description of the resource</td></tr>
+</tbody>
+</table>
+<h4><a class="anchor" aria-hidden="true" name="compound-index-list"></a><a href="#compound-index-list" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Compound Index List</h4>
+<table>
+<thead>
+<tr><th>collection</th><th>value</th><th>description</th></tr>
+</thead>
+<tbody>
+<tr><td>skills</td><td><code>priority</code> =&gt; <code>desc</code>, <code>updatedAt</code> =&gt; <code>desc</code></td><td>For skill category.</td></tr>
+<tr><td>work</td><td><code>endDate</code> =&gt; <code>desc</code>, <code>startDate</code> =&gt; <code>desc</code></td><td></td></tr>
+</tbody>
+</table>
+<h2><a class="anchor" aria-hidden="true" name="projects-collection"></a><a href="#projects-collection" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Projects Collection</h2>
+<p>This collection contains information about my personal projects. Project categories, languages, keywords are stored in <code>Map</code>s where keys are the <strong>corresponding resource key</strong> and value is the timestamp of the <strong>last update time</strong> of this project. For example, a project that uses Java programming can have a resource map with <code>key</code> equals <code>java</code>, which maps to an item in the <code>main</code> document of <code>metadata</code> collection. Storing like this allows filtering projects that uses a specific language (or has specified category or keywords) <strong>and</strong> sort the projects in reverse chronological order.</p>
+<p>Compound indexes are created to support additional filtering (by <code>active</code> property). These indexes enable queries that filter projects by both language/category and activeness while sorted in reverse chronological order. However, an extra index per language/category has to be established. This is the reason why filtering projects by both keywords and activeness is not supported (keyword list grows very fast while language and category rarely grows).</p>
+<h4><a class="anchor" aria-hidden="true" name="project-document-schema"></a><a href="#project-document-schema" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Project Document Schema</h4>
+<table>
+<thead>
+<tr><th>property</th><th>type</th><th>required</th><th>description</th></tr>
+</thead>
+<tbody>
+<tr><td>name</td><td>Text string</td><td>true</td><td>Project name. E.g., <code>Machine</code></td></tr>
+<tr><td>url</td><td>Text string</td><td>true</td><td>Link to the project's website.</td></tr>
+<tr><td>description</td><td>Text string</td><td>true</td><td>Short description for this project.</td></tr>
+<tr><td>primaryLanguage</td><td>Text string</td><td>true</td><td>Resource key of the primary programming language used in this project. E.g., <code>java</code></td></tr>
+<tr><td>primaryType</td><td>Text string</td><td>true</td><td>Resource key of the primary category. E.g., <code>backend</code></td></tr>
+<tr><td>startDate</td><td>Date</td><td>true</td><td>Start time of this project.</td></tr>
+<tr><td>endDate</td><td>Date</td><td>true</td><td>Last update time of this project.</td></tr>
+<tr><td>active</td><td>Boolean</td><td>true</td><td>Project status, <code>true</code> if the project is still under active development.</td></tr>
+<tr><td>featured</td><td>Boolean</td><td>true</td><td>Whether this project is featured.</td></tr>
+<tr><td>coverImageUrl</td><td>Text string</td><td>true</td><td>Link to the cover image.</td></tr>
+<tr><td>highlights</td><td>Array(Text string)</td><td>true</td><td>List of important things of this project.</td></tr>
+<tr><td>keywords</td><td>Map&lt;Text string, Integer&gt;</td><td>true</td><td>Keywords of this project, an index map where <code>key</code> is a <code>keyword key</code> and <code>value</code> is an integer representing the last update time.</td></tr>
+<tr><td>languages</td><td>Map&lt;Text string, Integer&gt;</td><td>true</td><td>Programming languages used in this project, an index map where <code>key</code> is a <code>language key</code> and <code>value</code> is an integer representing the last update time.</td></tr>
+<tr><td>types</td><td>Map&lt;Text string, Integer&gt;</td><td>true</td><td>Categories of this project, an index map where <code>key</code> is a <code>category key</code> and <code>value</code> is an integer representing the last update time.</td></tr>
+<tr><td>links</td><td><code>LinkMap entity</code></td><td>true</td><td>A map of links to documentations, github repositories, demo images and demo videos.</td></tr>
+</tbody>
+</table>
+<h4><a class="anchor" aria-hidden="true" name="link-map-entity-schema"></a><a href="#link-map-entity-schema" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Link Map Entity Schema</h4>
+<table>
+<thead>
+<tr><th>property</th><th>type</th><th>required</th><th>description</th></tr>
+</thead>
+<tbody>
+<tr><td>doc</td><td>Array(<code>Link entity</code>)</td><td>true</td><td>List of links to documents of this project.</td></tr>
+<tr><td>github</td><td>Array(<code>Link entity</code>)</td><td>true</td><td>List of links to github repositories of this project.</td></tr>
+<tr><td>demoImage</td><td>Array(<code>Link entity</code>)</td><td>true</td><td>List of links to demo images of this project.</td></tr>
+<tr><td>demoVideo</td><td>Array(<code>Link entity</code>)</td><td>true</td><td>List of links to demo videos of this project.</td></tr>
+</tbody>
+</table>
+<h4><a class="anchor" aria-hidden="true" name="link-entity-schema"></a><a href="#link-entity-schema" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Link Entity Schema</h4>
+<table>
+<thead>
+<tr><th>property</th><th>type</th><th>required</th><th>description</th></tr>
+</thead>
+<tbody>
+<tr><td>name</td><td>Text string</td><td>true</td><td>Link title. E.g., <code>Design document</code></td></tr>
+<tr><td>url</td><td>Text string</td><td>true</td><td>Url of this link.</td></tr>
+<tr><td>description</td><td>Text string false</td><td>true</td><td>Description of this link.</td></tr>
+</tbody>
+</table>
+<h4><a class="anchor" aria-hidden="true" name="compound-index-list"></a><a href="#compound-index-list" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Compound Index List</h4>
+<table>
+<thead>
+<tr><th>collection</th><th>value</th><th>description</th></tr>
+</thead>
+<tbody>
+<tr><td>projects</td><td><code>active</code> =&gt; <code>asc</code>, <code>languages.&lt;LANGUAGE_KEY&gt;</code> =&gt; <code>desc</code></td><td><code>LANGUAGE_KEY</code> is the key in the metadata resource map. One of this index is required per language. E.g., index will be <code>languages.java</code> if filtering on Java language with key <code>java</code>.</td></tr>
+<tr><td>projects</td><td><code>active</code> =&gt; <code>asc</code>, <code>types.&lt;CATEGORY_KEY&gt;</code> =&gt; <code>desc</code></td><td><code>CATEGORY_KEY</code> is the key in the metadata resource map. One of this index is required per project category.</td></tr>
+<tr><td>projects</td><td><code>featured</code> =&gt; <code>asc</code>, <code>endDate</code> =&gt; <code>desc</code></td><td>Filter projects by <code>featured</code> and sort projects in reverse chronological order (on last update time).</td></tr>
+</tbody>
+</table>
+</span></div></article></div><div class="docs-prevnext"><a class="docs-prev button" href="web_feature_project.html">← Feature - Project</a><a class="docs-next button" href="web_tests_n_docs.html">Tests and Documentations →</a></div></div></div></div><footer class="nav-footer" id="footer"><section class="sitemap"><div><h5>Docs</h5><a href="/portfoliodoc/docs/en/architecture.html">Architecture</a><a href="/portfoliodoc/docs/en/web_app_structure.html">Web Application Structure</a><a href="/portfoliodoc/docs/en/ci_cd.html">CI/CD Pipeline</a></div><div><h5>Contacts</h5><a href="https://github.com/sevenlol">Github</a><a href="https://www.linkedin.com/in/stephen-lin-b211aa109/">LinkedIn</a><a href="https://sevenloldev.com">Portfolio</a></div></section><section class="copyright">This website is generated using Facebook&#x27;s Docusaurus</section><section class="copyright">Copyright © 2018 Stephen Lin</section></footer></div></body></html>
