@@ -1,0 +1,38 @@
+version: 2
+jobs:
+  build_n_deploy:
+    working_directory: ~/project/website
+    docker:
+      - image: circleci/node:8.9.1
+    steps:
+      - checkout:
+          path: ~/project
+      - run:
+          name: Show current branch
+          command: echo ${CIRCLE_BRANCH}
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "package.json" }}
+            - v1-dependencies-
+      - run:
+          # install dependencies
+          name: Install local dependencies
+          command: npm install
+      - save_cache:
+          key: v1-dependencies-{{ checksum "package.json" }}
+          paths:
+            - node_modules
+      - run:
+          command: |
+            git config --global user.email ${GITHUB_EMAIL}
+            git config --global user.name ${GITHUB_NAME}
+            GIT_USER=${GITHUB_NAME} npm run publish-gh-pages
+workflows:
+  version: 2
+  deploy_doc:
+    jobs:
+      - build_n_deploy:
+          filters:
+            branches:
+              only:
+                - master

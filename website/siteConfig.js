@@ -9,8 +9,9 @@ const siteConfig = {
   title: 'Stephen Lin\'s Website',
   tagline: 'Built with Angular and Firebase',
   url: 'https://facebook.github.io' /* your website url */,
-  baseUrl: '/portfoliodoc/' /* base url for your project */,
-  projectName: 'portfoliodoc',
+  baseUrl: '/PortfolioDoc/' /* base url for your project */,
+  organizationName : 'sevenlol',
+  projectName: 'PortfolioDoc',
   headerLinks: [
     {doc: 'overview', label: 'Design Docs'},
     {href: 'https://sevenlol.github.io/PortfolioWebTSDoc/', label: 'Typescript Doc'}
