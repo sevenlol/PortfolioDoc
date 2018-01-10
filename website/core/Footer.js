@@ -7,6 +7,8 @@
 
 const React = require('react');
 
+const siteConfig = require(process.cwd() + '/siteConfig.js');
+
 class Footer extends React.Component {
   docUrl(doc, language) {
     const baseUrl = this.props.config.baseUrl;
@@ -25,19 +27,35 @@ class Footer extends React.Component {
         <section className="sitemap">
           <div>
             <h5>Docs</h5>
-            <a href={this.docUrl('doc1.html', this.props.language)}>
-              Getting Started (or other categories)
+            <a href={this.docUrl('architecture.html', this.props.language)}>
+              Architecture
             </a>
-            <a href={this.docUrl('doc2.html', this.props.language)}>
-              Guides (or other categories)
+            <a href={this.docUrl('web_app_structure.html', this.props.language)}>
+              Web Application Structure
             </a>
-            <a href={this.docUrl('doc3.html', this.props.language)}>
-              API Reference (or other categories)
+            <a href={this.docUrl('ci_cd.html', this.props.language)}>
+              CI/CD Pipeline
+            </a>
+          </div>
+
+          <div>
+            <h5>Contacts</h5>
+            <a href={siteConfig.profile.github}>
+              Github
+            </a>
+            <a href={siteConfig.profile.linkedin}>
+              LinkedIn
+            </a>
+            <a href={siteConfig.profile.website}>
+              Portfolio
             </a>
           </div>
         </section>
         <section className="copyright">
-          Copyright &copy; {currentYear} Stephen Lin
+          {siteConfig.citation}
+        </section>
+        <section className="copyright">
+          {siteConfig.copyright}
         </section>
       </footer>
     );

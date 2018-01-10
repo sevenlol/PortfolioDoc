@@ -3,7 +3,7 @@
   "localized-strings": {
     "next": "Next",
     "previous": "Previous",
-    "tagline": "A website for testing",
+    "tagline": "Built with Angular and Firebase",
     "architecture": "Architecture",
     "ci_cd": "CI & CD",
     "db_schema": "Database Schema",
@@ -17,6 +17,7 @@
     "tools": "Tools",
     "web_app_structure": "Application Structure",
     "Design Docs": "Design Docs",
+    "Typescript Doc": "Typescript Doc",
     "Design": "Design",
     "Website": "Website",
     "Automation": "Automation"

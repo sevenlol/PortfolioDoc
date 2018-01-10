@@ -79,9 +79,8 @@ class HomeSplash extends React.Component {
         <div className="inner">
           <ProjectTitle />
           <PromoSection>
-            <Button href="#try">Try It Out</Button>
-            <Button href={docUrl('doc1.html', language)}>Example Link</Button>
-            <Button href={docUrl('doc2.html', language)}>Example Link 2</Button>
+            <Button href="https://sevenloldev.com" target="_blank">Website Link</Button>
+            <Button href={docUrl('overview.html', language)}>Design Documents</Button>
           </PromoSection>
         </div>
       </SplashContainer>
@@ -98,6 +97,31 @@ const Block = props => (
   </Container>
 );
 
+const Features = props => (
+  <Block layout="fourColumn">
+    {[
+      {
+        content: 'Using Angular, Angular Material and Firebase',
+        image: imgUrl('code.svg'),
+        imageAlign: 'top',
+        title: 'Built from Scratch',
+      },
+      {
+        content: 'Unit tests, design documents and typescript documents',
+        image: imgUrl('check.svg'),
+        imageAlign: 'top',
+        title: 'Testing & Documentation',
+      },
+      {
+        content: 'Automated linting, unit tests, builds and deployments using CircleCI',
+        image: imgUrl('build.svg'),
+        imageAlign: 'top',
+        title: 'Automation',
+      },
+    ]}
+  </Block>
+);
+
 class Index extends React.Component {
   render() {
     let language = this.props.language || '';
@@ -105,6 +129,9 @@ class Index extends React.Component {
     return (
       <div>
         <HomeSplash language={language} />
+        <div className="mainContainer">
+          <Features />
+        </div>
       </div>
     );
   }
